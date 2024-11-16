@@ -1,16 +1,19 @@
-import React from 'react'
-import Carasol from '../Pages/Carosol'
-const Home = ()=> {
+import React from 'react';
+import Carasol from '../Pages/Carosol';
+import './Home.css'; // 스타일을 위한 CSS 파일
+
+const Home = () => {
   return (
-
-    <>
-    <div>
+    <div className="home-container">
+      <div>
         <Carasol />
-    </div>
+      </div>
 
-    <div id="box">Hajin Cho Github (click here)</div>
-    </>
+      <a href="https://github.com/Chohajin" target="_blank" className="centered-link">
+         Hajin Cho's Github (click here)
+      </a>
+    </div>
   );
 };
 
-export default Home
+export default Home;

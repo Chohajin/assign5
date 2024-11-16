@@ -1,106 +1,107 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
-import Loader from "../common/Loader";
 
 const ShowUser = () => {
-  const showUserApi = "https://67281923270bd0b9755456e8.mockapi.io/api/v1/users";
+  const apiUrl = "https://67281923270bd0b9755456e8.mockapi.io/api/v1/users";
 
-  const [user, setUser] = useState([]);
+  const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handleDelete = async (id) => {
-    setIsLoading(true);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
     try {
-      await axios.delete(`${showUserApi}/${id}`);
-      setUser(user.filter((item) => item.id !== id));
-    } catch (error) {
-      setError("Failed to delete user");
+      setIsLoading(true);
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      setUsers(data);
+    } catch (err) {
+      setError("Failed to fetch users.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    getUsers();
-  }, []);
-
-  const getUsers = async () => {
+  const handleDelete = async (id) => {
     try {
-      const response = await axios.get(showUserApi);
-      setUser(response.data);
-    } catch (error) {
-      setError("Failed to fetch users");
+      setIsLoading(true);
+      const response = await fetch(`${apiUrl}/${id}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete user");
+      // 삭제 후 사용자 목록 갱신
+      setUsers(users.filter((user) => user.id !== id));
+    } catch (err) {
+      setError("Error deleting user.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="container mt-5">
-      {isLoading && <Loader />}
-      {error && <p className="text-danger">{error}</p>}
+    <div className="d-flex justify-content-center align-items-center min-vh-100">
+      <div className="container text-center">
+        <div className="d-flex flex-column align-items-center mb-4">
+          <h2>👥 User Management</h2>
+          <a href="/add-user" className="btn btn-primary mb-2">
+            ➕ Add User
+          </a>
+          <h5 className="text-muted">Manage all users below</h5>
+        </div>
 
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>User Management</h2>
-        <Link to="/add-user" className="btn btn-primary">
-          <i className="fa fa-plus"></i> Add User
-        </Link>
-      </div>
+        {isLoading && <div className="spinner-border text-primary" role="status"></div>}
+        {error && <p className="text-danger">{error}</p>}
 
-      <table className="table table-hover table-bordered">
-        <thead className="table-dark">
-          <tr>
-            <th>#</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {user.length > 0 ? (
-            user.map((item, index) => (
-              <tr key={item.id}>
-                <td>{index + 1}</td>
-                <td>{item.name}</td>
-                <td>{item.email}</td>
-                <td>{item.phone}</td>
-                <td>
-                  <div className="btn-group">
-                    <Link
-                      to={`/edit-user/${item.id}`}
-                      className="btn btn-warning btn-sm"
-                      title="Edit"
-                    >
-                      <i className="fa fa-pencil"></i>
-                    </Link>
-                    <Link
-                      to={`/user/${item.id}`}
-                      className="btn btn-info btn-sm mx-2"
-                      title="View"
-                    >
-                      <i className="fa fa-eye"></i>
-                    </Link>
-                    <button
-                      className="btn btn-danger btn-sm"
-                      title="Delete"
-                      onClick={() => handleDelete(item.id)}
-                    >
-                      <i className="fa fa-trash"></i>
-                    </button>
-                  </div>
+        <table className="table table-striped table-hover text-center">
+          <thead className="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Age</th>
+              <th>City</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length > 0 ? (
+              users.map((user, index) => (
+                <tr key={user.id}>
+                  <td>{index + 1}</td>
+                  <td>{user.name}</td>
+                  <td>{user.age}</td>
+                  <td>{user.city}</td>
+                  <td>
+                    <div className="btn-group">
+                      <button
+                        className="btn btn-warning btn-sm"
+                        title="Edit"
+                        onClick={() => (window.location.href = `/edit-user/${user.id}`)}
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        className="btn btn-danger btn-sm"
+                        title="Delete"
+                        onClick={() => handleDelete(user.id)}
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="text-center">
+                  No Users Found
                 </td>
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td colSpan="5" className="text-center">
-                No Users Found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

@@ -1,74 +1,53 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Loader from "../common/Loader";
-import "./User.css";
+
 const EditUser = () => {
-  const [user, setUser] = useState([]);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
-  const getUserApi = "http://localhost:3000/user";
+  const apiUrl = `https://67281923270bd0b9755456e8.mockapi.io/api/v1/users/${id}`;
+  const [user, setUser] = useState({ name: "", age: "", city: "" });
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    getUser();
+    fetchUser();
   }, []);
 
-  const getUser = () => {
-    axios
-      .get(getUserApi.concat("/") + id)
-      .then((item) => {
-        setUser(item.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  const fetchUser = async () => {
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      setUser(data);
+    } catch (err) {
+      setError("Failed to fetch user data.");
+    }
   };
 
-  const handelInput = (e) => {
-    e.preventDefault();
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(name, value);
     setUser({ ...user, [name]: value });
   };
 
-  const handelSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    fetch(getUserApi.concat("/") + id, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(user),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setIsLoading(true);
-        navigate("/show-user");
-      })
-      .catch((error) => {
-        setError(error.message);
-        setIsLoading(false);
-      })
+    try {
+      await fetch(apiUrl, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(user),
+      });
+      navigate("/show-user");
+    } catch (err) {
+      setError("Failed to update user data.");
+    }
   };
 
   return (
-    <div className="user-form">
-      <div className="heading">
-      {isLoading && <Loader />}
-      {error && <p>Error: {error}</p>}
-        <p>Edit Form</p>
-      </div>
-      <form onSubmit={handelSubmit}>
+    <div className="container mt-5">
+      <h2>✏️ Edit User</h2>
+      {error && <p className="text-danger">{error}</p>}
+      <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label for="name" className="form-label">
+          <label htmlFor="name" className="form-label">
             Name
           </label>
           <input
@@ -77,40 +56,44 @@ const EditUser = () => {
             id="name"
             name="name"
             value={user.name}
-            onChange={handelInput}
-          />
-        </div>
-        <div className="mb-3 mt-3">
-          <label for="email" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            className="form-control"
-            id="email"
-            name="email"
-            value={user.email}
-            onChange={handelInput}
+            onChange={handleChange}
+            required
           />
         </div>
         <div className="mb-3">
-          <label for="pwd" className="form-label">
-            Phone
+          <label htmlFor="age" className="form-label">
+            Age
+          </label>
+          <input
+            type="number"
+            className="form-control"
+            id="age"
+            name="age"
+            value={user.age}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div className="mb-3">
+          <label htmlFor="city" className="form-label">
+            City
           </label>
           <input
             type="text"
             className="form-control"
-            id="phone"
-            name="phone"
-            value={user.phone}
-            onChange={handelInput}
+            id="city"
+            name="city"
+            value={user.city}
+            onChange={handleChange}
+            required
           />
         </div>
-        <button type="submit" className="btn btn-primary submit-btn">
-          EDIT
+        <button type="submit" className="btn btn-warning">
+          Save Changes
         </button>
       </form>
     </div>
   );
 };
+
 export default EditUser;
