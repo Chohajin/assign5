@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AJAX 연습</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>학생 데이터 관리</h1>
+    <button id="btnStu">모든 학생 데이터 가져오기</button> <br />
+    <button id="openAddModal" data-toggle="modal" data-target="#addModal">학생 데이터 추가</button>
+    <button id="openUpdateModal" data-toggle="modal" data-target="#updateModal">학생 데이터 수정</button>
+
+    <div id="contents"></div>
+
+    <!-- 데이터 추가 모달 -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="addModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addModalLabel">학생 데이터 추가</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="id">학생 ID</label>
+                    <input type="text" id="id" class="form-control" placeholder="ID 입력" required />
+                    <label for="name">이름</label>
+                    <input type="text" id="name" class="form-control" placeholder="이름" required />
+                    <label for="age">나이</label>
+                    <input type="number" id="age" class="form-control" placeholder="나이" required />
+                    <label for="city">거주지</label>
+                    <input type="text" id="city" class="form-control" placeholder="거주지" required />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" id="btnAdd">추가</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 데이터 수정 모달 -->
+    <div class="modal fade" id="updateModal" tabindex="-1" role="dialog" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">학생 데이터 수정</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="updateId">학생 ID</label>
+                    <input type="number" id="updateId" class="form-control" placeholder="ID 입력" required />
+                    <label for="updateName">이름</label>
+                    <input type="text" id="updateName" class="form-control" placeholder="이름" />
+                    <label for="updateAge">나이</label>
+                    <input type="number" id="updateAge" class="form-control" placeholder="나이" />
+                    <label for="updateCity">거주지</label>
+                    <input type="text" id="updateCity" class="form-control" placeholder="거주지" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" id="btnUpdate">수정</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>학생 데이터 삭제</h2>
+    <label for="deleteId">학생 ID</label>
+    <input type="text" id="deleteId" placeholder="ID 입력" required />
+    <button id="btnDelete">삭제</button>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const apiBaseURL = "https://67281923270bd0b9755456e8.mockapi.io/api/v1/users";
+
+        window.onload = function () {
+            let btnStu = document.getElementById("btnStu");
+            let btnAdd = document.getElementById("btnAdd");
+            let btnUpdate = document.getElementById("btnUpdate");
+            let btnDelete = document.getElementById("btnDelete");
+
+            btnStu.addEventListener("click", getStudentsWithCourses);
+            btnAdd.addEventListener("click", function () {
+                postData();
+                $('#addModal').modal('hide');
+            });
+            btnUpdate.addEventListener("click", function () {
+                let id = document.getElementById("updateId").value;
+                if (id) {
+                    updateData(id);
+                    $('#updateModal').modal('hide');
+                } else {
+                    alert("수정할 ID를 입력하세요.");
+                }
+            });
+
+            btnDelete.addEventListener("click", function () {
+                let id = document.getElementById("deleteId").value;
+                if (id) {
+                    deleteDataById(id);
+                } else {
+                    alert("삭제할 ID를 입력하세요.");
+                }
+            });
+        }
+
+        function getStudentsWithCourses() {
+            let contents = document.getElementById("contents");
+            contents.innerHTML = "";
+
+            fetch(apiBaseURL)
+                .then(response => response.json())
+                .then(students => {
+                    contents.innerHTML = students.map(student => 
+                        `<li>[ID] ${student.id}, [이름] ${student.name}, [나이] ${student.age}세, [거주지] ${student.city}</li>`
+                    ).join('');
+                })
+                .catch(error => console.error("데이터를 가져오는 중 오류 발생:", error));
+        }
+
+        function postData() {
+            let id = document.getElementById("id").value;
+            let name = document.getElementById("name").value;
+            let age = document.getElementById("age").value;
+            let city = document.getElementById("city").value;
+
+            fetch(apiBaseURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, name, age: parseInt(age, 10), city })
+            })
+            .then(response => {
+                if (response.ok) {
+                    getStudentsWithCourses();
+                } else {
+                    console.error("추가 중 오류 발생:", response.status, response.statusText);
+                }
+            })
+            .catch(error => console.error("추가 중 오류 발생:", error));
+        }
+
+        function updateData(id) {
+            let name = document.getElementById("updateName").value;
+            let age = document.getElementById("updateAge").value;
+            let city = document.getElementById("updateCity").value;
+
+            fetch(`${apiBaseURL}/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, age: parseInt(age, 10), city })
+            })
+            .then(response => {
+                if (response.ok) {
+                    getStudentsWithCourses();
+                } else {
+                    console.error("수정 중 오류 발생:", response.status, response.statusText);
+                }
+            })
+            .catch(error => console.error("수정 중 오류 발생:", error));
+        }
+
+        function deleteDataById(id) {
+            fetch(`${apiBaseURL}/${id}`, { method: "DELETE" })
+                .then(response => {
+                    if (response.ok) {
+                        getStudentsWithCourses();
+                    } else {
+                        console.error("삭제 중 오류 발생:", response.status, response.statusText);
+                    }
+                })
+                .catch(error => console.error("삭제 중 오류 발생:", error));
+        }
+    </script>
+</body>
+</html>
