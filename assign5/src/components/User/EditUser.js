@@ -42,56 +42,67 @@ const EditUser = () => {
   };
 
   return (
-    <div className="container mt-5">
-      <h2>✏️ Edit User</h2>
-      {error && <p className="text-danger">{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="name" className="form-label">
-            Name
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="name"
-            name="name"
-            value={user.name}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="age" className="form-label">
-            Age
-          </label>
-          <input
-            type="number"
-            className="form-control"
-            id="age"
-            name="age"
-            value={user.age}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="city" className="form-label">
-            City
-          </label>
-          <input
-            type="text"
-            className="form-control"
-            id="city"
-            name="city"
-            value={user.city}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" className="btn btn-warning">
-          Save Changes
-        </button>
-      </form>
+    <div className="container d-flex justify-content-center align-items-center min-vh-100">
+      <div className="col-lg-6 col-md-8 col-sm-10 shadow p-4 rounded bg-white">
+        <h2 className="text-center mb-4">✏️ Edit User</h2>
+        {error && <p className="text-danger text-center">{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label htmlFor="name" className="form-label">
+              Name
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="name"
+              name="name"
+              value={user.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="age" className="form-label">
+              Age
+            </label>
+            <input
+              type="number"
+              className="form-control"
+              id="age"
+              name="age"
+              value={user.age}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label htmlFor="city" className="form-label">
+              City
+            </label>
+            <input
+              type="text"
+              className="form-control"
+              id="city"
+              name="city"
+              value={user.city}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="d-flex justify-content-between">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => navigate("/show-user")}
+            >
+              Cancel
+            </button>
+            <button type="submit" className="btn btn-warning">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
