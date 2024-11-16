@@ -1,9 +1,10 @@
 import React from 'react'
-import './Common.css';
+import './common.css';
 export default function Footer() {
   return (
     <div className='footer'>
-        Footer
+        Hajin Cho (22300726) <br/>
+        My Assignment 5-1 CRUD page
     </div>
   )
 }

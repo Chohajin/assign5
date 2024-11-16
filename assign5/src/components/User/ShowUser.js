@@ -4,25 +4,19 @@ import { Link } from "react-router-dom";
 import Loader from "../common/Loader";
 
 const ShowUser = () => {
-  const showUserApi = "http://localhost:3000/user";
+  const showUserApi = "https://67281923270bd0b9755456e8.mockapi.io/api/v1/users";
 
   const [user, setUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const handelDelete = async (id) => {
-    console.log("id : -", id);
+  const handleDelete = async (id) => {
     setIsLoading(true);
     try {
-      const response = await fetch(showUserApi.concat("/") + id, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
-      }
+      await axios.delete(`${showUserApi}/${id}`);
       setUser(user.filter((item) => item.id !== id));
     } catch (error) {
-      setError(error.message);
+      setError("Failed to delete user");
     } finally {
       setIsLoading(false);
     }
@@ -32,64 +26,83 @@ const ShowUser = () => {
     getUsers();
   }, []);
 
-  const getUsers = () => {
-    axios
-      .get(showUserApi)
-      .then((res) => {
-        setUser(res.data);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+  const getUsers = async () => {
+    try {
+      const response = await axios.get(showUserApi);
+      setUser(response.data);
+    } catch (error) {
+      setError("Failed to fetch users");
+    }
   };
 
-  if (user.length < 0) {
-    return <h1>no user found</h1>;
-  } else {
-    return (
-      <div className="mt-5">
-        {isLoading && <Loader />}
-        {error && <p>Error: {error}</p>}
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Phone</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {user?.map((item, i) => {
-              return (
-                <tr key={i + 1}>
-                  <td>{i + 1}</td>
-                  <td>{item.name}</td>
-                  <td>{item.email}</td>
-                  <td>{item.phone}</td>
-                  <td>
-                    <Link to={`/edit-user/${item.id}`}>
-                      <i className="fa fa-pencil" aria-hidden="true"></i>
-                    </Link>
-                    <Link to={`/user/${item.id}`}>
-                      <i className="fa fa-eye" aria-hidden="true"></i>
-                    </Link>
+  return (
+    <div className="container mt-5">
+      {isLoading && <Loader />}
+      {error && <p className="text-danger">{error}</p>}
 
-                    <i
-                      className="fa fa-trash-o"
-                      aria-hidden="true"
-                      onClick={() => handelDelete(item.id)}
-                    ></i>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h2>User Management</h2>
+        <Link to="/add-user" className="btn btn-primary">
+          <i className="fa fa-plus"></i> Add User
+        </Link>
       </div>
-    );
-  }
+
+      <table className="table table-hover table-bordered">
+        <thead className="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {user.length > 0 ? (
+            user.map((item, index) => (
+              <tr key={item.id}>
+                <td>{index + 1}</td>
+                <td>{item.name}</td>
+                <td>{item.email}</td>
+                <td>{item.phone}</td>
+                <td>
+                  <div className="btn-group">
+                    <Link
+                      to={`/edit-user/${item.id}`}
+                      className="btn btn-warning btn-sm"
+                      title="Edit"
+                    >
+                      <i className="fa fa-pencil"></i>
+                    </Link>
+                    <Link
+                      to={`/user/${item.id}`}
+                      className="btn btn-info btn-sm mx-2"
+                      title="View"
+                    >
+                      <i className="fa fa-eye"></i>
+                    </Link>
+                    <button
+                      className="btn btn-danger btn-sm"
+                      title="Delete"
+                      onClick={() => handleDelete(item.id)}
+                    >
+                      <i className="fa fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="5" className="text-center">
+                No Users Found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
 };
 
 export default ShowUser;
